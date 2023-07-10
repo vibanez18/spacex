@@ -1,66 +1,67 @@
 package com.vibanez.spacex.android
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.vibanez.spacex.Greeting
+import android.widget.FrameLayout
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.vibanez.spacex.SpaceXSDK
+import com.vibanez.spacex.infrastructure.cache.DatabaseDriverFactory
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    private val mainScope = MainScope()
+
+    private lateinit var launchesRecyclerView: RecyclerView
+    private lateinit var progressBarView: FrameLayout
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+
+    private val sdk = SpaceXSDK(DatabaseDriverFactory(this))
+
+    private val launchesRvAdapter = LaunchesRvAdapter(listOf())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MyApplicationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    var text by remember { mutableStateOf("Loading") }
-                    LaunchedEffect(true) {
-                        text = try {
-                            Greeting().greet()
-                        } catch (e: Exception) {
-                            e.localizedMessage ?: "error"
-                        }
-                    }
-                    GreetingView(text)
-                }
-            }
+        title = "SpaceX Launches"
+        setContentView(R.layout.activity_main)
+
+        launchesRecyclerView = findViewById(R.id.launchesListRv)
+        progressBarView = findViewById(R.id.progressBar)
+        swipeRefreshLayout = findViewById(R.id.swipeContainer)
+
+        launchesRecyclerView.adapter = launchesRvAdapter
+        launchesRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        swipeRefreshLayout.setOnRefreshListener {
+            swipeRefreshLayout.isRefreshing = false
+            displayLaunches(true)
         }
+
+        displayLaunches(false)
     }
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContent {
-//            MyApplicationTheme {
-//                Surface(
-//                    modifier = Modifier.fillMaxSize(),
-//                    color = MaterialTheme.colors.background
-//                ) {
-//                    GreetingView(Greeting().greet())
-//                }
-//            }
-//        }
-//    }
-}
 
-@Composable
-fun GreetingView(text: String) {
-    Text(text = text)
-}
+    override fun onDestroy() {
+        super.onDestroy()
+        mainScope.cancel()
+    }
 
-@Preview
-@Composable
-fun DefaultPreview() {
-    MyApplicationTheme {
-        GreetingView("Hello, Android!")
+    private fun displayLaunches(needReload: Boolean) {
+        progressBarView.isVisible = true
+        mainScope.launch {
+            kotlin.runCatching {
+                sdk.getLaunches(needReload)
+            }.onSuccess {
+                launchesRvAdapter.launches = it
+                launchesRvAdapter.notifyDataSetChanged()
+            }.onFailure {
+                Toast.makeText(this@MainActivity, it.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
+            progressBarView.isVisible = false
+        }
     }
 }
