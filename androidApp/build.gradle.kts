@@ -46,4 +46,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.4.3")
     implementation("androidx.compose.material:material:1.4.3")
     implementation("androidx.activity:activity-compose:1.7.1")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.0-alpha")
+    implementation("com.arkivanov.decompose:decompose:2.0.0-alpha-02")
 }

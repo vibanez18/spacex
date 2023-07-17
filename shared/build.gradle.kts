@@ -29,11 +29,13 @@ kotlin {
 
     val ktorVersion = "2.3.2"
     val sqlDelightVersion = "1.5.5"
+    val koinVersion = "3.4.0"
+    val decompose = "2.0.0-alpha-02"
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //DateTime
+                // DateTime
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
                 // Kotlin coroutines
@@ -44,8 +46,16 @@ kotlin {
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
+                // Koin
+                implementation("io.insert-koin:koin-core:$koinVersion")
+
+                // Decompose
+                implementation("com.arkivanov.decompose:decompose:$decompose")
+
                 // SQLDelight
                 implementation("com.squareup.sqldelight:runtime:$sqlDelightVersion")
+
+                implementation("dev.icerock.moko:resources:0.22.0")
             }
         }
         val commonTest by getting {

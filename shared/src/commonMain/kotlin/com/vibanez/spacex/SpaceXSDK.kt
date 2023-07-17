@@ -3,7 +3,6 @@ package com.vibanez.spacex
 import RocketLaunch
 import com.vibanez.spacex.infrastructure.cache.Database
 import com.vibanez.spacex.infrastructure.cache.DatabaseDriverFactory
-import com.vibanez.spacex.infrastructure.rest.SpaceXApi
 
 class SpaceXSDK(databaseDriverFactory: DatabaseDriverFactory) {
     private val database = Database(databaseDriverFactory)
